@@ -9,6 +9,8 @@ def packet_to_dict(pkt):
             'timestamp': pkt.sniff_time.strftime('%H:%M:%S'),
             'src_ip': pkt.ip.src if hasattr(pkt, 'ip') else '',
             'dst_ip': pkt.ip.dst if hasattr(pkt, 'ip') else '',
+            'src_port': pkt[pkt.transport_layer].srcport if hasattr(pkt, 'transport_layer') and hasattr(pkt[pkt.transport_layer], 'srcport') else '',
+            'dst_port': pkt[pkt.transport_layer].dstport if hasattr(pkt, 'transport_layer') and hasattr(pkt[pkt.transport_layer], 'dstport') else '',
             'protocol': pkt.highest_layer,
             'length': int(pkt.length) if hasattr(pkt, 'length') else 0,
             'url': pkt.http.host + pkt.http.request_uri if hasattr(pkt, 'http') and hasattr(pkt.http, 'host') and hasattr(pkt.http, 'request_uri') else ''
