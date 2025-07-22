@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Scanner Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md h-screen flex flex-col">
+        <div class="p-6 text-2xl font-bold text-blue-600">NetScan</div>
+        <nav class="flex-1">
+            <ul class="space-y-2">
+                <li><a href="{{ url_for('dashboard') }}" class="block px-6 py-3 hover:bg-blue-50 rounded">Dashboard</a></li>
+                <li><a href="{{ url_for('live_monitor') }}" class="block px-6 py-3 hover:bg-blue-50 rounded">Live Monitor</a></li>
+                <li><a href="{{ url_for('phishing_logs') }}" class="block px-6 py-3 hover:bg-blue-50 rounded">Phishing Logs</a></li>
+                <li><a href="{{ url_for('pcap_analysis') }}" class="block px-6 py-3 hover:bg-blue-50 rounded">PCAP Analysis</a></li>
+                <li><a href="{{ url_for('devices') }}" class="block px-6 py-3 hover:bg-blue-50 rounded">Devices on Network</a></li>
+                <li><a href="{{ url_for('settings') }}" class="block px-6 py-3 hover:bg-blue-50 rounded">Settings</a></li>
+            </ul>
+        </nav>
+    </aside>
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+        <h1 class="text-3xl font-semibold mb-6">Welcome to Network Scanner Dashboard</h1>
+        <div id="main-content">
+            <!-- Dynamic content will be injected here -->
+        </div>
+    </main>
+</body>
+</html> 
