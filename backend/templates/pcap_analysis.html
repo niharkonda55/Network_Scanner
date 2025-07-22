@@ -1,5 +1,78 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">PCAP Analysis</h1>
-<p>This is the PCAP Analysis page. Upload and analyze .pcap files here.</p>
+<div class="bg-white p-4 rounded shadow mb-8">
+    <h2 class="text-lg font-semibold mb-2">Upload a .pcap File</h2>
+    <form id="pcap-upload-form" enctype="multipart/form-data" class="flex flex-col md:flex-row gap-4 items-center">
+        <input type="file" id="pcap-file" name="pcap" accept=".pcap,.pcapng" class="border rounded px-2 py-1" required>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Analyze</button>
+    </form>
+    <div id="pcap-status" class="mt-2 text-sm text-gray-600"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+    <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-lg font-semibold mb-2">Packets (Real-Time)</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="px-2 py-1">Time</th>
+                        <th class="px-2 py-1">Source IP</th>
+                        <th class="px-2 py-1">Destination IP</th>
+                        <th class="px-2 py-1">Protocol</th>
+                        <th class="px-2 py-1">Src Port</th>
+                        <th class="px-2 py-1">Dst Port</th>
+                        <th class="px-2 py-1">Size</th>
+                    </tr>
+                </thead>
+                <tbody id="pcap-packet-table-body">
+                    <!-- Packets will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-lg font-semibold mb-2">Phishing Alerts</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="px-2 py-1">Time</th>
+                        <th class="px-2 py-1">Source IP</th>
+                        <th class="px-2 py-1">Destination IP</th>
+                        <th class="px-2 py-1">Protocol</th>
+                        <th class="px-2 py-1">URL</th>
+                        <th class="px-2 py-1">Risk</th>
+                        <th class="px-2 py-1">Score</th>
+                    </tr>
+                </thead>
+                <tbody id="pcap-phishing-table-body">
+                    <!-- Phishing alerts will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="bg-white p-4 rounded shadow mb-8">
+    <h2 class="text-lg font-semibold mb-2">Devices Discovered</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr>
+                    <th class="px-2 py-1">IP Address</th>
+                    <th class="px-2 py-1">MAC Address</th>
+                    <th class="px-2 py-1">Vendor</th>
+                    <th class="px-2 py-1">First Seen</th>
+                    <th class="px-2 py-1">Last Seen</th>
+                    <th class="px-2 py-1">Packets</th>
+                </tr>
+            </thead>
+            <tbody id="pcap-device-table-body">
+                <!-- Devices will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/pcap_analysis.js') }}"></script>
 {% endblock %} 

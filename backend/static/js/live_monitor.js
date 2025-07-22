@@ -10,6 +10,10 @@ let trafficData = [];
 let protocolCounts = {};
 const TRAFFIC_WINDOW = 60; // seconds
 
+const COMMON_PORTS = {
+    80: 'HTTP', 443: 'HTTPS', 53: 'DNS', 22: 'SSH', 21: 'FTP', 25: 'SMTP', 110: 'POP3', 143: 'IMAP', 23: 'TELNET', 3306: 'MySQL', 5432: 'PostgreSQL', 3389: 'RDP', 8080: 'HTTP-ALT', 137: 'NetBIOS', 445: 'SMB', 139: 'NetBIOS', 67: 'DHCP', 68: 'DHCP', 123: 'NTP', 161: 'SNMP', 389: 'LDAP', 636: 'LDAPS', 5060: 'SIP', 5061: 'SIPS', 1812: 'RADIUS', 1813: 'RADIUS', 69: 'TFTP', 514: 'Syslog', 2049: 'NFS', 1900: 'SSDP', 5353: 'mDNS', 8000: 'HTTP-ALT', 8888: 'HTTP-ALT', 25: 'SMTP', 587: 'SMTP', 465: 'SMTPS', 995: 'POP3S', 993: 'IMAPS', 5900: 'VNC', 6000: 'X11', 6667: 'IRC', 12345: 'NetBus', 31337: 'Back Orifice'
+};
+
 function updateIPDropdown() {
     const ipDropdown = document.getElementById('ip-filter');
     const ips = Array.from(uniqueIPs).sort();
@@ -32,6 +36,40 @@ function renderTable() {
             <td class="px-2 py-1">${pkt.length}</td>
         </tr>`;
         tbody.insertAdjacentHTML('beforeend', row);
+    });
+}
+
+function renderServiceTable() {
+    const tbody = document.getElementById('service-table-body');
+    const label = document.getElementById('service-ip-label');
+    tbody.innerHTML = '';
+    label.textContent = selectedIP ? `for ${selectedIP}` : '';
+    if (!selectedIP) return;
+    // Compute stats
+    let stats = {};
+    packets.forEach(pkt => {
+        if (pkt.src_ip === selectedIP) {
+            let key = `out-${pkt.dst_port}-${pkt.protocol}`;
+            if (!stats[key]) stats[key] = {direction: 'Outgoing', port: pkt.dst_port, protocol: pkt.protocol, service: COMMON_PORTS[pkt.dst_port] || '', packets: 0, bytes: 0};
+            stats[key].packets++;
+            stats[key].bytes += parseInt(pkt.length) || 0;
+        }
+        if (pkt.dst_ip === selectedIP) {
+            let key = `in-${pkt.src_port}-${pkt.protocol}`;
+            if (!stats[key]) stats[key] = {direction: 'Incoming', port: pkt.src_port, protocol: pkt.protocol, service: COMMON_PORTS[pkt.src_port] || '', packets: 0, bytes: 0};
+            stats[key].packets++;
+            stats[key].bytes += parseInt(pkt.length) || 0;
+        }
+    });
+    Object.values(stats).sort((a, b) => b.bytes - a.bytes).forEach(row => {
+        tbody.insertAdjacentHTML('beforeend', `<tr>
+            <td class="px-2 py-1">${row.direction}</td>
+            <td class="px-2 py-1">${row.port}</td>
+            <td class="px-2 py-1">${row.protocol}</td>
+            <td class="px-2 py-1">${row.service}</td>
+            <td class="px-2 py-1">${row.packets}</td>
+            <td class="px-2 py-1">${row.bytes}</td>
+        </tr>`);
     });
 }
 
@@ -76,6 +114,7 @@ function updateCharts() {
         protocolChart.data.datasets[0].data = Object.values(protocolCounts);
         protocolChart.update('none');
     }
+    renderServiceTable();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -95,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedIP = e.target.value;
         renderTable();
         updateCharts();
+        renderServiceTable();
     });
 
     socket.on('packet', pkt => {
@@ -104,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateIPDropdown();
         renderTable();
         updateCharts();
+        renderServiceTable();
     });
 
     // Initialize charts

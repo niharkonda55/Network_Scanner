@@ -37,6 +37,26 @@
         <canvas id="protocolChart" height="120"></canvas>
     </div>
 </div>
+<div class="bg-white p-4 rounded shadow mb-8">
+    <h2 class="text-lg font-semibold mb-2">Service/Port Analysis <span id="service-ip-label" class="text-gray-500 text-sm"></span></h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr>
+                    <th class="px-2 py-1">Direction</th>
+                    <th class="px-2 py-1">Port</th>
+                    <th class="px-2 py-1">Protocol</th>
+                    <th class="px-2 py-1">Service</th>
+                    <th class="px-2 py-1">Packets</th>
+                    <th class="px-2 py-1">Bytes</th>
+                </tr>
+            </thead>
+            <tbody id="service-table-body">
+                <!-- Service/port analysis will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+</div>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ url_for('static', filename='js/live_monitor.js') }}"></script>

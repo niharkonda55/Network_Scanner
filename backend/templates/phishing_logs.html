@@ -1,5 +1,27 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">Phishing Logs</h1>
-<p>This is the Phishing Logs page. Detected phishing attempts will be listed here.</p>
+<div class="bg-white p-4 rounded shadow mb-8">
+    <h2 class="text-lg font-semibold mb-2">Flagged URLs (Real-Time)</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr>
+                    <th class="px-2 py-1">Time</th>
+                    <th class="px-2 py-1">Source IP</th>
+                    <th class="px-2 py-1">Destination IP</th>
+                    <th class="px-2 py-1">Protocol</th>
+                    <th class="px-2 py-1">URL</th>
+                    <th class="px-2 py-1">Risk</th>
+                    <th class="px-2 py-1">Score</th>
+                </tr>
+            </thead>
+            <tbody id="phishing-table-body">
+                <!-- Phishing alerts will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/phishing_logs.js') }}"></script>
 {% endblock %} 

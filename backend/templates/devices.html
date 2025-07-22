@@ -1,5 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">Devices on Network</h1>
-<p>This is the Devices on Network page. Discovered devices will be shown here.</p>
+<div class="bg-white p-4 rounded shadow mb-8">
+    <h2 class="text-lg font-semibold mb-2">Discovered Devices (Real-Time)</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr>
+                    <th class="px-2 py-1">IP Address</th>
+                    <th class="px-2 py-1">MAC Address</th>
+                    <th class="px-2 py-1">Vendor</th>
+                    <th class="px-2 py-1">First Seen</th>
+                    <th class="px-2 py-1">Last Seen</th>
+                    <th class="px-2 py-1">Packets</th>
+                </tr>
+            </thead>
+            <tbody id="device-table-body">
+                <!-- Devices will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/devices.js') }}"></script>
 {% endblock %} 

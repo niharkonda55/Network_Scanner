@@ -1,0 +1,6 @@
+Flask
+pyshark
+scapy
+requests
+flask-socketio
+tailwindcss 
