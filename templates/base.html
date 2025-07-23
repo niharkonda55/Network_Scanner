@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Scanner Dashboard</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom CSS for additional styling or overrides -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+    <!-- Socket.IO client library -->
+    <!-- Removed 'integrity' attribute to resolve parsing error for local development -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex font-sans">
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-white shadow-md h-screen flex flex-col rounded-r-lg">
+        <div class="p-6 text-2xl font-bold text-blue-600 border-b border-gray-200">NetScan</div>
+        <nav class="flex-1 p-4">
+            <ul class="space-y-2">
+                <li><a href="{{ url_for('dashboard') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">Dashboard</a>
+                </li>
+                <li><a href="{{ url_for('live_monitor') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">Live
+                        Monitor</a></li>
+                <li><a href="{{ url_for('phishing_logs') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">Phishing
+                        Logs</a></li>
+                <li><a href="{{ url_for('pcap_analysis') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">PCAP
+                        Analysis</a></li>
+                <li><a href="{{ url_for('devices') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">Devices
+                        on Network</a></li>
+                <li><a href="{{ url_for('settings_page') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">Settings</a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-8 overflow-y-auto">
+        <!-- This is where content from child templates will be injected -->
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+
+</html>
