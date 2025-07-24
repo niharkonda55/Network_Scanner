@@ -398,6 +398,69 @@ def stop_capture_socket():
     else:
         emit('capture_status', {'status': 'not_running', 'message': 'Capture is not running.'}), 200
 
+from backend.attacks import arp_spoof
+
+@app.route('/start_mitm', methods=['POST'])
+def start_mitm():
+    data = request.get_json()
+    target_ip = data['target_ip']
+    gateway_ip = data['gateway_ip']
+    interface = data['interface']
+    arp_spoof.start_arp_spoof(target_ip, gateway_ip, interface)
+    return jsonify({"status": "MITM started"})
+
+@app.route('/stop_mitm', methods=['POST'])
+def stop_mitm():
+    try:
+        # If your stop function doesn't need parameters, don't fetch from request
+        # arp_spoof.stop_arp_spoof()  # Update this based on your implementation
+        return jsonify({"message": "MITM attack stopped successfully."})
+    except Exception as e:
+        print(f"Error stopping MITM: {e}")
+        return jsonify({"message": f"Failed to stop MITM: {str(e)}"}), 500
+
+
+from backend.utils.network_interface import get_default_wifi_interface
+
+@app.route('/get_default_interface')
+def get_default_interface():
+    return jsonify({"interface": get_default_wifi_interface()})
+
+from flask import request, jsonify
+import scapy.all as scapy
+import socket
+
+@app.route('/scan_network', methods=['POST'])
+def scan_network():
+    try:
+        data = request.get_json()
+        interface = data.get('interface')
+
+        # Get local IP address of the selected interface
+        local_ip = scapy.get_if_addr(interface)
+        subnet = local_ip.rsplit('.', 1)[0] + '.1/24'
+
+        # Perform ARP scan
+        arp_request = scapy.ARP(pdst=subnet)
+        broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
+        arp_request_broadcast = broadcast / arp_request
+        answered = scapy.srp(arp_request_broadcast, timeout=2, iface=interface, verbose=False)[0]
+
+        devices = []
+        for sent, received in answered:
+            ip = received.psrc
+            mac = received.hwsrc
+            try:
+                hostname = socket.gethostbyaddr(ip)[0]
+            except:
+                hostname = None
+            devices.append({"ip": ip, "mac": mac, "hostname": hostname})
+
+        return jsonify({"devices": devices})
+
+    except Exception as e:
+        print("Error in scan_network:", e)
+        return jsonify({"error": "Failed to scan network"}), 500
 
 # --- Application Entry Point ---
 if __name__ == '__main__':

@@ -80,7 +80,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 // If the "No packets captured yet" row exists, remove it
                 livePacketTableBody.innerHTML = '';
             }
+            // livePacketTableBody.prepend(row);
+            const packetTableContainer = document.getElementById("packet-table-container");
+            // const shouldAutoScroll = packetTableContainer.scrollTop < 10; // near top
+
+            // livePacketTableBody.prepend(row);
+
+            // if (shouldAutoScroll) {
+            //     packetTableContainer.scrollTop = 0;
+            // }
+            const isAtTop = packetTableContainer.scrollTop === 0;
+            const isAtBottom = Math.abs(packetTableContainer.scrollHeight - packetTableContainer.clientHeight - packetTableContainer.scrollTop) < 10;
+
             livePacketTableBody.prepend(row);
+
+            // Only scroll to top if user is at top before update
+            if (isAtTop) {
+                packetTableContainer.scrollTop = 0;
+            }
+
+
 
             // Keep only the last N rows to prevent table from growing too large
             const maxRows = 50; // Display max 50 packets
@@ -108,16 +127,153 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // stopCaptureBtn.addEventListener('click', () => {
+    //     if (socket) {
+    //         socket.emit('stop_capture');
+    //         startCaptureBtn.disabled = false;
+    //         stopCaptureBtn.disabled = true;
+    //         livePacketTableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Stopping capture...</td></tr>';
+    //     }
+    // });
     stopCaptureBtn.addEventListener('click', () => {
         if (socket) {
             socket.emit('stop_capture');
             startCaptureBtn.disabled = false;
             stopCaptureBtn.disabled = true;
-            livePacketTableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Stopping capture...</td></tr>';
+
+            // Optionally, show a message below or elsewhere in UI — but keep the packets
+            const noticeRow = document.createElement('tr');
+            noticeRow.innerHTML = `
+            <td colspan="7" class="px-6 py-4 text-center text-blue-600 font-semibold">
+                Capture stopped. Displaying last captured packets.
+            </td>`;
+
+            // Add message row only if it's not already there
+            if (![...livePacketTableBody.children].some(tr => tr.textContent.includes("Capture stopped"))) {
+                livePacketTableBody.appendChild(noticeRow);
+            }
         }
     });
+    // Auto-fetch interface on load
+    window.addEventListener("DOMContentLoaded", () => {
+        fetch('/get_default_interface')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("mitm-interface").value = data.interface;
+            });
+    });
+
+    // --- Network Scanner Logic ---
+    const scannerInterfaceSelect = document.getElementById("scanner-interface");
+    const scanBtn = document.getElementById("scan-network-btn");
+    const resultsBody = document.getElementById("scanner-results");
+
+    // Reuse the interfaces fetched earlier to populate scanner dropdown
+    function populateScannerInterfaces(interfaces) {
+        scannerInterfaceSelect.innerHTML = '';
+        interfaces.forEach(iface => {
+            const option = document.createElement('option');
+            option.value = iface.name;
+            option.textContent = iface.description;
+            scannerInterfaceSelect.appendChild(option);
+        });
+    }
+
+    // Fetch interfaces again just for scanner dropdown (or reuse previous list if available)
+    fetch('/api/interfaces')
+        .then(res => res.json())
+        .then(data => populateScannerInterfaces(data))
+        .catch(err => {
+            scannerInterfaceSelect.innerHTML = '<option>Error loading interfaces</option>';
+            console.error("Error loading scanner interfaces:", err);
+        });
+
+    scanBtn.addEventListener("click", () => {
+        const selectedInterface = scannerInterfaceSelect.value;
+        if (!selectedInterface) {
+            alert("Please select an interface to scan.");
+            return;
+        }
+
+        resultsBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">Scanning...</td></tr>`;
+
+        fetch('/scan_network', {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interface: selectedInterface })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.devices.length === 0) {
+                    resultsBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">No active devices found.</td></tr>`;
+                    return;
+                }
+
+                resultsBody.innerHTML = '';
+                data.devices.forEach(device => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                <td class="px-6 py-4">${device.ip}</td>
+                <td class="px-6 py-4">${device.mac}</td>
+                <td class="px-6 py-4">${device.hostname || 'Unknown'}</td>
+            `;
+                    resultsBody.appendChild(row);
+                });
+            })
+            .catch(err => {
+                console.error("Scan error:", err);
+                resultsBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-red-500">Error scanning network.</td></tr>`;
+            });
+    });
+
+
 
     // Initial load of interfaces and connect to Socket.IO
     loadNetworkInterfaces();
     connectSocket();
 });
+function startMITM() {
+    const targetIP = document.getElementById("target-ip").value;
+    const gatewayIP = document.getElementById("gateway-ip").value;
+    const interfaceName = document.getElementById("mitm-interface").value;
+
+    if (!targetIP || !gatewayIP || !interfaceName) {
+        alert("Please fill all MITM fields!");
+        return;
+    }
+
+    fetch('/start_mitm', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            target_ip: targetIP,
+            gateway_ip: gatewayIP,
+            interface: interfaceName
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message || "MITM attack started.");
+        })
+        .catch(error => {
+            console.error("Error starting MITM:", error);
+            alert("Failed to start MITM.");
+        });
+}
+
+function stopMITM() {
+    fetch('/stop_mitm', {
+        method: 'POST'
+    })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message || "MITM attack stopped.");
+        })
+        .catch(error => {
+            console.error("Error stopping MITM:", error);
+            alert("Failed to stop MITM.");
+        });
+}
+
