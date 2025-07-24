@@ -462,6 +462,13 @@ def scan_network():
         print("Error in scan_network:", e)
         return jsonify({"error": "Failed to scan network"}), 500
 
+from flask import jsonify
+
+@app.route('/api/recent_events')
+def get_recent_events():
+    return jsonify(list(recent_events_history)[:10])
+
+
 # --- Application Entry Point ---
 if __name__ == '__main__':
     # Create necessary directories if they don't exist

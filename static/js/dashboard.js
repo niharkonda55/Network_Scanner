@@ -49,6 +49,39 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
         console.error("Canvas element with ID 'threatChart' not found.");
     }
+    function fetchRecentEvents() {
+        fetch('/api/recent_events')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('eventsBody');
+                tbody.innerHTML = ''; // clear previous rows
+
+                data.forEach(event => {
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${event.time}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${event.src_ip}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${event.dst_ip}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${event.protocol}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${event.url}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            ${event.risk === 'High' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                            ${event.risk}
+                        </span>
+                    </td>
+                `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching events:', error));
+    }
+
+    // Call initially and repeat every 5 seconds
+    fetchRecentEvents();
+    setInterval(fetchRecentEvents, 5000);
+
 });
 
 // You can add more JavaScript functions here for dynamic updates,
