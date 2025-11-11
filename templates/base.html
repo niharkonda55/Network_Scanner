@@ -21,22 +21,22 @@
         <div class="p-6 text-2xl font-bold text-blue-600 border-b border-gray-200">NetScan</div>
         <nav class="flex-1 p-4">
             <ul class="space-y-2">
-                <li><a href="{{ url_for('dashboard') }}"
+                <li><a href="{{ url_for('main.dashboard') }}"
                         class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">Dashboard</a>
                 </li>
-                <li><a href="{{ url_for('live_monitor') }}"
+                <li><a href="{{ url_for('main.live_monitor') }}"
                         class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">Live
                         Monitor</a></li>
-                <li><a href="{{ url_for('phishing_logs') }}"
+                <li><a href="{{ url_for('main.phishing_logs') }}"
                         class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">Phishing
                         Logs</a></li>
-                <li><a href="{{ url_for('pcap_analysis') }}"
+                <li><a href="{{ url_for('main.pcap_analysis') }}"
                         class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">PCAP
                         Analysis</a></li>
-                <li><a href="{{ url_for('devices') }}"
+                <li><a href="{{ url_for('main.devices') }}"
                         class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">Devices
                         on Network</a></li>
-                <li><a href="{{ url_for('settings_page') }}"
+                <li><a href="{{ url_for('main.settings_page') }}"
                         class="block px-4 py-2 text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-md transition duration-200 ease-in-out">Settings</a>
                 </li>
             </ul>
