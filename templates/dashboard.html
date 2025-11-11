@@ -4,20 +4,23 @@
 <h1 class="text-3xl font-bold text-gray-800 mb-8">Dashboard Overview</h1>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-    <!-- Stats Cards -->
+    <!-- Packets Captured -->
     <div class="bg-white p-6 rounded-lg shadow-lg text-center transform transition duration-300 hover:scale-105">
-        <div class="text-4xl font-extrabold text-blue-600 mb-2">1234</div>
+        <div id="packetsCaptured" class="text-4xl font-extrabold text-blue-600 mb-2">0</div>
         <div class="text-gray-600 text-lg">Packets Captured</div>
     </div>
+    <!-- Phishing Attempts -->
     <div class="bg-white p-6 rounded-lg shadow-lg text-center transform transition duration-300 hover:scale-105">
-        <div class="text-4xl font-extrabold text-yellow-500 mb-2">5</div>
+        <div id="phishingAttempts" class="text-4xl font-extrabold text-yellow-500 mb-2">0</div>
         <div class="text-gray-600 text-lg">Phishing Attempts</div>
     </div>
+    <!-- Devices Found -->
     <div class="bg-white p-6 rounded-lg shadow-lg text-center transform transition duration-300 hover:scale-105">
-        <div class="text-4xl font-extrabold text-green-500 mb-2">8</div>
+        <div id="devicesFound" class="text-4xl font-extrabold text-green-500 mb-2">0</div>
         <div class="text-gray-600 text-lg">Devices Found</div>
     </div>
 </div>
+
 
 <!-- Threat Summary Chart -->
 <div class="bg-white p-6 rounded-lg shadow-lg mb-8">

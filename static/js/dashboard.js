@@ -1,4 +1,5 @@
 // static/js/dashboard.js
+let threatChart; // global chart reference
 
 document.addEventListener('DOMContentLoaded', function () {
     // Get the context of the canvas element we want to draw the chart on
@@ -6,42 +7,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Check if the canvas element exists before trying to create a chart
     if (ctx) {
-        new Chart(ctx, {
-            type: 'line', // Type of chart (e.g., 'line', 'bar', 'pie')
+        threatChart = new Chart(ctx, {
+            type: 'line',
             data: {
-                // Labels for the x-axis (time points)
-                labels: ['12:00', '12:05', '12:10', '12:15', '12:20', '12:25'],
+                labels: [], // start empty, will be filled dynamically
                 datasets: [{
-                    label: 'Phishing Attempts', // Label for the dataset
-                    data: [0, 1, 2, 1, 3, 4], // Data points for the chart
-                    borderColor: 'rgb(239, 68, 68)', // Red color for the line
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)', // Light red fill under the line
-                    fill: true, // Fill the area under the line
-                    tension: 0.4 // Smooth the line
+                    label: 'Phishing Attempts',
+                    data: [],
+                    borderColor: 'rgb(239, 68, 68)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: true,
+                    tension: 0.4
                 }]
             },
             options: {
-                responsive: true, // Make the chart responsive to container size
-                maintainAspectRatio: false, // Allow height to be controlled by CSS
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false // Hide the legend for simplicity
-                    },
-                    title: {
-                        display: false, // Hide the title as we have an H2 above
-                    }
+                    legend: { display: false },
+                    title: { display: false }
                 },
                 scales: {
-                    x: {
-                        grid: {
-                            display: false // Hide x-axis grid lines
-                        }
-                    },
+                    x: { grid: { display: false } },
                     y: {
-                        beginAtZero: true, // Start y-axis from zero
-                        grid: {
-                            color: 'rgba(200, 200, 200, 0.2)' // Light grid lines for y-axis
-                        }
+                        beginAtZero: true,
+                        grid: { color: 'rgba(200, 200, 200, 0.2)' }
                     }
                 }
             }
@@ -49,40 +39,51 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
         console.error("Canvas element with ID 'threatChart' not found.");
     }
-    function fetchRecentEvents() {
-        fetch('/api/recent_events')
+
+    function fetchDashboardData() {
+        fetch('/api/dashboard_data')
             .then(response => response.json())
             .then(data => {
+                // Update stats
+                document.getElementById('packetsCaptured').innerText = data.packets_captured;
+                document.getElementById('phishingAttempts').innerText = data.phishing_attempts;
+                document.getElementById('devicesFound').innerText = data.devices_found;
+
+                // Update chart
+                if (threatChart) {
+                    threatChart.data.labels = data.threat_summary.labels;
+                    threatChart.data.datasets[0].data = data.threat_summary.data;
+                    threatChart.update();
+                }
+
+                // Update recent events
                 const tbody = document.getElementById('eventsBody');
-                tbody.innerHTML = ''; // clear previous rows
+                tbody.innerHTML = '';
+                data.recent_events.forEach(event => {
+                    let badgeClass = 'bg-green-100 text-green-800';
+                    if (event.risk_level === 'High') badgeClass = 'bg-red-100 text-red-800';
+                    else if (event.risk_level === 'Medium') badgeClass = 'bg-yellow-100 text-yellow-800';
 
-                data.forEach(event => {
                     const row = document.createElement('tr');
-
                     row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${event.time}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${event.src_ip}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${event.dst_ip}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${event.protocol}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${event.url}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${event.risk === 'High' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
-                            ${event.risk}
-                        </span>
-                    </td>
-                `;
+                        <td class="px-6 py-4 text-sm text-gray-900">${event.time}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${event.source_ip}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${event.dest_ip}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${event.protocol}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${event.url}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badgeClass}">
+                                ${event.risk_level}
+                            </span>
+                        </td>
+                    `;
                     tbody.appendChild(row);
                 });
             })
-            .catch(error => console.error('Error fetching events:', error));
+            .catch(error => console.error('Error fetching dashboard data:', error));
     }
 
     // Call initially and repeat every 5 seconds
-    fetchRecentEvents();
-    setInterval(fetchRecentEvents, 5000);
-
+    fetchDashboardData();
+    setInterval(fetchDashboardData, 5000);
 });
-
-// You can add more JavaScript functions here for dynamic updates,
-// filtering, or other dashboard functionalities.
