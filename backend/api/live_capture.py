@@ -99,15 +99,11 @@ def list_interfaces():
     return interfaces
 
 
-def _process_packet(packet, packet_callback):
+def parse_packet(packet):
     """
-    Processes a single captured packet and extracts relevant information.
-    Calls packet_callback with the extracted data.
+    Parses a single Scapy packet and extracts relevant information into a dictionary.
+    This is a reusable function for both live capture and PCAP analysis.
     """
-    global stop_capture_signal
-    if stop_capture_signal:
-        raise StopIteration
-
     packet_data = {
         "timestamp": time.strftime("%H:%M:%S"),
         "source_ip": "N/A",
@@ -168,7 +164,18 @@ def _process_packet(packet, packet_callback):
             packet_data["dest_ip"] = packet.pdst if packet.haslayer('ARP') else "N/A"
             packet_data["url"] = "ARP_Packet"
 
-    packet_callback(packet_data)
+    return packet_data
+
+def _process_packet(packet, packet_callback):
+    """
+    Internal callback for live sniffing. Parses the packet and calls the provided callback.
+    """
+    global stop_capture_signal
+    if stop_capture_signal:
+        raise StopIteration
+
+    processed_data = parse_packet(packet)
+    packet_callback(processed_data)
 
 
 def start_capture(interface, packet_callback):
