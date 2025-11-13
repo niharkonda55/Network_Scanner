@@ -9,8 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Function to fetch and display phishing logs
     async function fetchPhishingLogs() {
         try {
-            // TODO: Implement backend API endpoint to fetch phishing logs from your database
-            const response = await fetch('/api/phishing_logs');
+            const response = await fetch('/api/recent_events');
             const logs = await response.json();
 
             phishingLogsTableBody.innerHTML = ''; // Clear existing rows
@@ -21,15 +20,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         log.risk_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-green-100 text-green-800';
                     row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.timestamp}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.time}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.source_ip}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.dest_ip}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.url_domain}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.detection_method}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.url}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.detection_methods.join(', ')}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${riskColorClass}">${log.risk_score}</span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${riskColorClass}">${log.risk_level}</span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.details || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.protocol}</td>
                     `;
                     phishingLogsTableBody.appendChild(row);
                 });

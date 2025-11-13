@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.css" rel="stylesheet" type="text/css" />
+
 <h1 class="text-3xl font-bold text-gray-800 mb-8">Devices on Network</h1>
 
 <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
@@ -24,27 +26,10 @@
 </div>
 
 <div class="bg-white p-6 rounded-lg shadow-lg">
-    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Discovered Devices</h2>
-    <div class="overflow-x-auto rounded-lg border border-gray-200">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MAC Address</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor (OUI)</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Seen</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discovery Type</th>
-                </tr>
-            </thead>
-            <tbody id="devices-table-body" class="bg-white divide-y divide-gray-200">
-                <!-- Device data will be injected here -->
-                <tr>
-                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">No devices discovered yet. Perform a scan!</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Discovered Devices Map</h2>
+    <div id="network-map" style="height: 600px; border: 1px solid #e2e8f0; border-radius: 0.5rem;"></div>
 </div>
 
-<script src="{{ url_for('static', filename='js/devices.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js"></script>
+<script src="{{ url_for('static', filename='js/network_map.js') }}"></script>
 {% endblock %}

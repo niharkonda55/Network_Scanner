@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request, current_app
 from backend.api import live_capture
 from backend.attacks import arp_spoof
 from backend.utils.network_interface import get_default_wifi_interface
+from backend.analysis import phishing
 import ipaddress
 import psutil
 import sys
@@ -92,20 +93,21 @@ def scan_devices():
             except Exception as e2:
                 return jsonify({"status": "error", "message": f"Error determining IP range: {e2}."}), 400
 
-    def run_arp_scan_thread():
-        devices = live_capture.arp_scan(interface_scapy_name, ip_range)
-        for dev in devices:
-            mac_vendor = oui_lookup.lookup_mac_vendor(dev['mac'])
-            current_app.discovered_devices[dev['ip']] = {
-                "ip": dev['ip'],
-                "mac": dev['mac'],
-                "vendor": mac_vendor,
-                "last_seen": time.strftime("%H:%M:%S"),
-                "type": "Active Scan"
-            }
-        current_app.socketio.emit('devices_updated', list(current_app.discovered_devices.values()))
+    def run_arp_scan_thread(app):
+        with app.app_context():
+            devices = live_capture.arp_scan(interface_scapy_name, ip_range)
+            for dev in devices:
+                mac_vendor = oui_lookup.lookup_mac_vendor(dev['mac'])
+                current_app.discovered_devices[dev['ip']] = {
+                    "ip": dev['ip'],
+                    "mac": dev['mac'],
+                    "vendor": mac_vendor,
+                    "last_seen": time.strftime("%H:%M:%S"),
+                    "type": "Active Scan"
+                }
+            current_app.socketio.emit('devices_updated', list(current_app.discovered_devices.values()))
 
-    scan_thread = threading.Thread(target=run_arp_scan_thread)
+    scan_thread = threading.Thread(target=run_arp_scan_thread, args=(current_app._get_current_object(),))
     scan_thread.daemon = True
     scan_thread.start()
 
@@ -176,3 +178,47 @@ def scan_network():
 @api_routes.route('/api/recent_events')
 def get_recent_events():
     return jsonify(list(current_app.recent_events_history))
+
+@api_routes.route('/api/analyze_pcap', methods=['POST'])
+def analyze_pcap():
+    if 'pcap_file' not in request.files:
+        return jsonify({"error": "No PCAP file provided"}), 400
+
+    file = request.files['pcap_file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    try:
+        # Use a temporary file to handle the upload
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            file.save(tmp.name)
+            packets = scapy.rdpcap(tmp.name)
+
+        analyzed_packets = []
+        phishing_detected = 0
+
+        for packet in packets:
+            packet_data = live_capture.parse_packet(packet)
+            if packet_data.get('url') and packet_data['url'] not in ["N/A", "HTTP_URL_Parse_Error", "HTTPS (Encrypted)", "DNS_Query_Error", "ARP_Packet", "HTTP_Response"]:
+                phishing_result = phishing.analyze_url_for_phishing(packet_data['url'])
+                packet_data['risk_level'] = phishing_result['threat_level']
+                if phishing_result['threat_level'] in ['High', 'Medium']:
+                    phishing_detected += 1
+            else:
+                packet_data['risk_level'] = 'Low'
+
+            analyzed_packets.append(packet_data)
+
+        return jsonify({
+            "packets_analyzed": len(packets),
+            "phishing_detected": phishing_detected,
+            "analyzed_packets": analyzed_packets
+        })
+    except Exception as e:
+        return jsonify({"error": f"Error processing PCAP file: {e}"}), 500
+    finally:
+        # Clean up the temporary file
+        if 'tmp' in locals() and tmp.name:
+            import os
+            os.unlink(tmp.name)
